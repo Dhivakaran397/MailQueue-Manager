@@ -8,6 +8,9 @@ import authRoutes from './routes/authRoutes.js';
 import campaignRoutes from './routes/campaignRoutes.js';
 import recipientRoutes from './routes/recipientRoutes.js';
 
+// Automatically start background email worker inside server process
+import './workers/emailWorker.js';
+
 const app = express();
 
 app.use(cors());
