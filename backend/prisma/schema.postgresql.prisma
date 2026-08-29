@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id        String     @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  email     String     @unique
+  password  String
+  createdAt DateTime   @default(now())
+  campaigns Campaign[]
+}
+
+model Campaign {
+  id          String      @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  userId      String      @db.Uuid
+  user        User        @relation(fields: [userId], references: [id])
+  name        String
+  scheduledAt DateTime
+  status      String      @default("PENDING")
+  createdAt   DateTime    @default(now())
+  recipients  Recipient[]
+}
+
+model Recipient {
+  id                 String    @id @default(dbgenerated("gen_random_uuid()")) @db.Uuid
+  campaignId         String    @db.Uuid
+  campaign           Campaign  @relation(fields: [campaignId], references: [id])
+  email              String
+  status             String    @default("PENDING")
+  jobId              String?
+  etherealPreviewUrl String?
+  errorMessage       String?
+  sentAt             DateTime?
+  createdAt          DateTime  @default(now())
+}

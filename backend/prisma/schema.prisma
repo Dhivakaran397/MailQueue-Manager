@@ -1,0 +1,40 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+  url      = "file:./dev.db"
+}
+
+model User {
+  id        String     @id @default(uuid())
+  email     String     @unique
+  password  String
+  createdAt DateTime   @default(now())
+  campaigns Campaign[]
+}
+
+model Campaign {
+  id          String      @id @default(uuid())
+  userId      String
+  user        User        @relation(fields: [userId], references: [id])
+  name        String
+  scheduledAt DateTime
+  status      String      @default("PENDING")
+  createdAt   DateTime    @default(now())
+  recipients  Recipient[]
+}
+
+model Recipient {
+  id                 String    @id @default(uuid())
+  campaignId         String
+  campaign           Campaign  @relation(fields: [campaignId], references: [id])
+  email              String
+  status             String    @default("PENDING")
+  jobId              String?
+  etherealPreviewUrl String?
+  errorMessage       String?
+  sentAt             DateTime?
+  createdAt          DateTime  @default(now())
+}
