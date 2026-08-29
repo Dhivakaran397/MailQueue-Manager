@@ -20,8 +20,11 @@ export default function Auth() {
         headers: { Authorization: `Bearer ${tokenResponse.access_token}` }
       });
       const googleUser = await res.json();
-      const googleEmail = googleUser.email || 'dhivak397@gmail.com';
-      const googlePass = 'Password123!';
+      if (!googleUser.email) {
+        throw new Error('Could not fetch email from Google profile.');
+      }
+      const googleEmail = googleUser.email;
+      const googlePass = `Pass_${googleEmail.replace(/[^a-zA-Z0-9]/g, '')}`;
 
       try {
         const response = await api.post('/auth/login', { email: googleEmail, password: googlePass });
@@ -32,28 +35,7 @@ export default function Auth() {
         login(response.data.token, response.data.user);
       }
     } catch (err) {
-      handleGoogleFallback();
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const handleGoogleFallback = async () => {
-    setLoading(true);
-    setError('');
-    try {
-      const googleEmail = 'dhivak397@gmail.com';
-      const googlePass = 'Password123!';
-      try {
-        const response = await api.post('/auth/login', { email: googleEmail, password: googlePass });
-        login(response.data.token, response.data.user);
-      } catch (e) {
-        await api.post('/auth/register', { email: googleEmail, password: googlePass });
-        const response = await api.post('/auth/login', { email: googleEmail, password: googlePass });
-        login(response.data.token, response.data.user);
-      }
-    } catch (err) {
-      setError('Google authentication failed. Please try standard login.');
+      setError(err.message || 'Google authentication failed. Please try again.');
     } finally {
       setLoading(false);
     }
@@ -61,8 +43,10 @@ export default function Auth() {
 
   const triggerGoogleLogin = useGoogleLogin({
     onSuccess: handleGoogleSuccess,
-    onError: () => handleGoogleFallback(),
-    onNonOAuthError: () => handleGoogleFallback()
+    onError: (err) => {
+      console.error('Google login error:', err);
+      setError('Google OAuth origin mismatch. Please add https://mail-queue-manager.vercel.app to Authorized JavaScript Origins in Google Cloud Console.');
+    }
   });
 
   const handleSubmit = async (e) => {
