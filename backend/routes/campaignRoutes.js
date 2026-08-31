@@ -6,6 +6,12 @@ import { scheduleCampaign } from '../controllers/campaignController.js';
 const router = express.Router();
 const upload = multer({ storage: multer.memoryStorage() });
 
-router.post('/schedule', authMiddleware, upload.single('file'), scheduleCampaign);
+const optionalUpload = (req, res, next) => {
+  upload.single('file')(req, res, () => {
+    next();
+  });
+};
+
+router.post('/schedule', authMiddleware, optionalUpload, scheduleCampaign);
 
 export default router;

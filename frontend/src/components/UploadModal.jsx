@@ -55,17 +55,20 @@ export default function ComposeModal({ onClose, onSuccess }) {
     setLoading(true);
 
     try {
-      const formData = new FormData();
-      formData.append('name', subject);
-      formData.append('scheduledAt', scheduledAtDate);
-      if (toEmail) {
-        formData.append('to', toEmail);
-      }
       if (csvFile) {
+        const formData = new FormData();
+        formData.append('name', subject);
+        formData.append('scheduledAt', scheduledAtDate);
+        if (toEmail) formData.append('to', toEmail);
         formData.append('file', csvFile);
+        await api.post('/campaigns/schedule', formData);
+      } else {
+        await api.post('/campaigns/schedule', {
+          name: subject,
+          scheduledAt: scheduledAtDate,
+          to: toEmail
+        });
       }
-
-      await api.post('/campaigns/schedule', formData);
 
       onSuccess();
       onClose();
