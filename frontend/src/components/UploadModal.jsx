@@ -65,9 +65,7 @@ export default function ComposeModal({ onClose, onSuccess }) {
         formData.append('file', csvFile);
       }
 
-      await api.post('/campaigns/schedule', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
+      await api.post('/campaigns/schedule', formData);
 
       onSuccess();
       onClose();
